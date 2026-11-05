@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trova le Coppie</title>
+    <style>
+      @font-face {
+        font-family: "Intro Rust";
+        src: url("assets/fonts/IntroRustG-Base2Line.otf") format("opentype");
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: "Rust Paragraph";
+        src: url("assets/fonts/IntroHeadR-Base.otf") format("opentype");
+        font-weight: bold;
+        font-style: normal;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: black;
+        font-family: "Intro Rust";
+        color: white;
+      }
+
+      #logo-coce{
+        width: 250px;
+      }
+
+      #top-bar {
+        display: flex;
+        gap: 50px;
+        font-size: x-small;
+      }
+
+      #campo {
+        display: grid;
+        align-items: center;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+        column-gap: 3px;
+        row-gap: 5px;
+        margin-bottom: 50px;
+      }
+
+      #tasti {
+        display: flex;
+        gap: 20px;
+      }
+
+      #back {
+        padding: 10px;
+        background-color: #175640;
+        color: white;
+        text-decoration: none;
+      }
+
+      #restart {
+        padding: 10px;
+        color: white;
+        font-family: "Intro Rust";
+        background-color: #b81c12;
+        border-radius: 0;
+        font-size: large;
+        border: none;
+      }
+
+      .card {
+        width: 80px;
+        height: 100px;
+        background-color: #175640;
+        border: solid 2px #bf8c4e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .card img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <img id="logo-coce" src="assets/img/logo-coce-completo.svg" alt="logo Coce" />
+
+    <div id="top-bar">
+      <h1>Coppie: <span id="punteggio">0</span></h1>
+      <h1>Tempo: <span id="time">10:00</span></h1>
+    </div>
+
+    <div id="campo">
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+       <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+       <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+             <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+             <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+      <div class="card">
+        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
+      </div>
+    </div>
+
+    <div id="tasti">
+      <a id="back" href="../index.html">Torna Indietro</a>
+      <button id="restart">Ricomincia</button>
+    </div>
+  </body>
+</html>

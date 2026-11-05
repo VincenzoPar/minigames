@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Evita l'ananas!</title>
+
+    <style>
+      @font-face {
+        font-family: "Intro Rust"; /* Dai un nome al font */
+        src: url("assets/fonts/IntroRustG-Base2Line.otf") format("opentype"); /* Modifica il percorso in base alla posizione effettiva del tuo file */
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #111;
+      }
+
+      .rust {
+        font-family: "Intro Rust", sans-serif;
+      }
+
+      #hud {
+        position: fixed;
+        top: 12px;
+        left: 16px;
+        z-index: 20;
+        color: white;
+        font-size: 28px;
+        pointer-events: none;
+      }
+
+      #game-container {
+        position: fixed;
+        top: 65px;
+        bottom: calc(125px + env(safe-area-inset-bottom));
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+        padding: 0 8px;
+      }
+
+      canvas {
+        display: block;
+        height: 100%;
+        width: auto;
+        max-width: 100%;
+        background: #222;
+        border: 2px solid #bf8c4e;
+        border-radius: 8px;
+        touch-action: none;
+      }
+
+      #controls {
+        display: none;
+      }
+
+      @media (pointer: coarse) {
+        #game-container {
+          bottom: 125px;
+        }
+
+        #controls {
+          display: flex;
+          position: fixed;
+          bottom: calc(16px + env(safe-area-inset-bottom));
+          left: 0;
+          right: 0;
+          height: 90px;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0 24px;
+          pointer-events: none;
+          z-index: 30;
+        }
+
+        .ctrl-btn {
+          pointer-events: auto;
+          width: 90px;
+          height: 90px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          touch-action: none;
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-tap-highlight-color: transparent;
+          border: 0;
+          background: transparent;
+          transition:
+            background 0.08s ease,
+            transform 0.08s ease;
+        }
+
+        .ctrl-btn img {
+          width: 80px;
+          height: 80px;
+          object-fit: contain;
+          pointer-events: none;
+          user-select: none;
+          -webkit-user-drag: none;
+        }
+
+        .ctrl-btn.active {
+          background: #108337;
+          transform: scale(0.94);
+        }
+      }
+
+      @media (pointer: fine) {
+        #game-container {
+          bottom: 0;
+        }
+      }
+    </style>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  </head>
+
+  <body>
+    <div id="hud" class="rust" style="color: #bf8c4e;">
+      PUNTEGGIO: <span id="score">0</span>
+    </div>
+
+    <div id="game-container">
+      <canvas id="game" width="360" height="500"></canvas>
+    </div>
+
+    <div id="controls">
+      <button
+        id="btn-left"
+        class="ctrl-btn"
+        aria-label="Muovi a sinistra"
+        type="button"
+      >
+        <img src="assets/icons/freccia-sinistra.png" alt="" />
+      </button>
+
+      <button
+        id="btn-right"
+        class="ctrl-btn"
+        aria-label="Muovi a destra"
+        type="button"
+      >
+        <img src="assets/icons/freccia-destra.png" alt="" />
+      </button>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("game");
+      const ctx = canvas.getContext("2d");
+      const scoreEl = document.getElementById("score");
+
+      const BASE_WIDTH = 360;
+      const BASE_HEIGHT = 500;
+
+      const playerImg = new Image();
+      playerImg.src = "assets/img/margherita.png";
+      let playerImgReady = false;
+
+      playerImg.onload = () => {
+        playerImgReady = true;
+      };
+
+      const obstacleImg = new Image();
+      obstacleImg.src = "assets/img/ananas.png";
+      let obstacleImgReady = false;
+
+      obstacleImg.onload = () => {
+        obstacleImgReady = true;
+      };
+
+      const player = {
+        x: BASE_WIDTH / 2 - 25,
+        y: BASE_HEIGHT - 50,
+        width: 110,
+        height: 35,
+        speed: 320,
+      };
+
+      const PIZZA_SIZE = 130;
+
+      const keys = { left: false, right: false };
+
+      let obstacles = [];
+      let spawnTimer = 0;
+      let spawnInterval = 1000;
+      let elapsed = 0;
+      let score = 0;
+      let gameOver = false;
+      let lastTime = 0;
+
+      // Adatta il canvas allo spazio disponibile mantenendo
+      // le proporzioni del gioco.
+      function resizeCanvas() {
+        const container = document.getElementById("game-container");
+
+        const availableWidth = container.clientWidth;
+        const availableHeight = container.clientHeight;
+
+        const scale = Math.min(
+          availableWidth / BASE_WIDTH,
+          availableHeight / BASE_HEIGHT,
+        );
+
+        canvas.style.width = `${BASE_WIDTH * scale}px`;
+        canvas.style.height = `${BASE_HEIGHT * scale}px`;
+      }
+
+      window.addEventListener("resize", resizeCanvas);
+      window.addEventListener("orientationchange", resizeCanvas);
+
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", resizeCanvas);
+      }
+
+      resizeCanvas();
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft" || e.key === "a") keys.left = true;
+        if (e.key === "ArrowRight" || e.key === "d") keys.right = true;
+        if (gameOver && e.key === " ") resetGame();
+      });
+
+      window.addEventListener("keyup", (e) => {
+        if (e.key === "ArrowLeft" || e.key === "a") keys.left = false;
+        if (e.key === "ArrowRight" || e.key === "d") keys.right = false;
+      });
+
+      function bindHoldButton(btn, key) {
+        const press = (e) => {
+          e.preventDefault();
+          keys[key] = true;
+          btn.classList.add("active");
+
+          if (e.pointerId != null && btn.setPointerCapture) {
+            try {
+              btn.setPointerCapture(e.pointerId);
+            } catch (_) {}
+          }
+        };
+
+        const release = (e) => {
+          if (e) e.preventDefault();
+          keys[key] = false;
+          btn.classList.remove("active");
+        };
+
+        btn.addEventListener("pointerdown", press);
+        btn.addEventListener("pointerup", release);
+        btn.addEventListener("pointercancel", release);
+        btn.addEventListener("lostpointercapture", release);
+
+        btn.addEventListener("touchstart", press, { passive: false });
+        btn.addEventListener("touchend", release);
+        btn.addEventListener("touchcancel", release);
+
+        btn.addEventListener("contextmenu", (e) => e.preventDefault());
+      }
+
+      bindHoldButton(document.getElementById("btn-left"), "left");
+
+      bindHoldButton(document.getElementById("btn-right"), "right");
+
+      canvas.addEventListener("pointerdown", () => {
+        if (gameOver) resetGame();
+      });
+
+      function spawnObstacle() {
+        const width = 20 + Math.random() * 40;
+
+        const ratio = obstacleImgReady
+          ? obstacleImg.naturalWidth / obstacleImg.naturalHeight
+          : 1;
+
+        const height = width / ratio;
+
+        obstacles.push({
+          x: Math.random() * (BASE_WIDTH - width),
+          y: -height,
+          width,
+          height,
+          speed: 120 + score * 4,
+        });
+      }
+
+      function rectsCollide(a, b) {
+        return (
+          a.x < b.x + b.width &&
+          a.x + a.width > b.x &&
+          a.y < b.y + b.height &&
+          a.y + a.height > b.y
+        );
+      }
+
+      function update(dt) {
+        if (gameOver) return;
+
+        if (keys.left) player.x -= player.speed * dt;
+        if (keys.right) player.x += player.speed * dt;
+
+        player.x = Math.max(0, Math.min(BASE_WIDTH - player.width, player.x));
+
+        spawnTimer += dt * 1000;
+
+        if (spawnTimer >= spawnInterval) {
+          spawnTimer = 0;
+          spawnObstacle();
+          spawnInterval = Math.max(300, spawnInterval - 10);
+        }
+
+        for (const obs of obstacles) {
+          obs.y += obs.speed * dt;
+        }
+
+        obstacles = obstacles.filter((obs) => obs.y < BASE_HEIGHT + 50);
+
+        for (const obs of obstacles) {
+          if (rectsCollide(player, obs)) {
+            gameOver = true;
+          }
+        }
+
+        elapsed += dt;
+        score = Math.floor(elapsed * 10);
+        scoreEl.textContent = score;
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
+
+        const pizzaX = player.x + player.width / 2 - PIZZA_SIZE / 2;
+
+        const pizzaY = player.y + player.height / 2 - PIZZA_SIZE / 2;
+
+        if (playerImgReady) {
+          ctx.drawImage(playerImg, pizzaX, pizzaY, PIZZA_SIZE, PIZZA_SIZE);
+        } else {
+          ctx.fillStyle = "#4ade80";
+          ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        for (const obs of obstacles) {
+          if (obstacleImgReady) {
+            ctx.drawImage(obstacleImg, obs.x, obs.y, obs.width, obs.height);
+          } else {
+            ctx.fillStyle = "#f87171";
+            ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+          }
+        }
+
+        if (gameOver) {
+          ctx.fillStyle = "rgba(0,0,0,0.6)";
+          ctx.fillRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
+
+          ctx.fillStyle = "#fff";
+          ctx.font = "28px sans-serif";
+          ctx.textAlign = "center";
+
+          ctx.fillText("Game Over", BASE_WIDTH / 2, BASE_HEIGHT / 2 - 10);
+
+          ctx.font = "16px sans-serif";
+
+          ctx.fillText(
+            "Tocca per ricominciare / Premi Spazio",
+            BASE_WIDTH / 2,
+            BASE_HEIGHT / 2 + 20,
+          );
+        }
+      }
+
+      function resetGame() {
+        obstacles = [];
+        spawnTimer = 0;
+        spawnInterval = 1000;
+        elapsed = 0;
+        score = 0;
+        gameOver = false;
+
+        player.x = BASE_WIDTH / 2 - 50;
+
+        keys.left = false;
+        keys.right = false;
+
+        document
+          .querySelectorAll(".ctrl-btn.active")
+          .forEach((b) => b.classList.remove("active"));
+
+        scoreEl.textContent = "0";
+      }
+
+      function loop(timestamp) {
+        if (!lastTime) lastTime = timestamp;
+
+        const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+
+        lastTime = timestamp;
+
+        update(dt);
+        draw();
+
+        requestAnimationFrame(loop);
+      }
+
+      requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>

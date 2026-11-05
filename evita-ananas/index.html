@@ -43,6 +43,16 @@
         pointer-events: none;
       }
 
+      #logo {
+        height: 45px;
+        width: 45px;
+        position: fixed;
+        top: 12px;
+        right: 16px;
+        z-index: 20;
+        pointer-events: none;
+      }
+
       #game-container {
         position: fixed;
         top: 65px;
@@ -134,9 +144,12 @@
   </head>
 
   <body>
-    <div id="hud" class="rust" style="color: #bf8c4e;">
+    
+    <div id="hud" class="rust" style="color: #bf8c4e">
       PUNTEGGIO: <span id="score">0</span>
     </div>
+    <img id="logo" src="assets/img/logo.jpg" alt="logo-coce">
+    
 
     <div id="game-container">
       <canvas id="game" width="360" height="500"></canvas>
@@ -191,7 +204,7 @@
         y: BASE_HEIGHT - 50,
         width: 110,
         height: 35,
-        speed: 320,
+        speed: 380,
       };
 
       const PIZZA_SIZE = 130;

@@ -16,6 +16,13 @@
         font-style: normal;
       }
 
+      @font-face {
+        font-family: "Rust Paragraph"; /* Dai un nome al font */
+        src: url("assets/fonts/IntroHeadR-Base.otf") format("opentype"); /* Modifica il percorso in base alla posizione effettiva del tuo file */
+        font-weight: bold;
+        font-style: normal;
+      }
+
       * {
         box-sizing: border-box;
       }
@@ -26,7 +33,7 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
-        background: #111;
+        background: black;
       }
 
       .rust {
@@ -35,7 +42,7 @@
 
       #hud {
         position: fixed;
-        top: 12px;
+        top: 14px;
         left: 16px;
         z-index: 20;
         color: white;
@@ -72,12 +79,139 @@
         max-width: 100%;
         background: #222;
         border: 2px solid #bf8c4e;
-        border-radius: 8px;
         touch-action: none;
       }
 
       #controls {
         display: none;
+      }
+
+      #start-modal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.42);
+        z-index: 100;
+      }
+
+      #start-modal.hidden {
+        display: none;
+      }
+
+      #end-modal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.42);
+        z-index: 100;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+          opacity 0.35s ease,
+          visibility 0.35s ease;
+      }
+
+      #end-modal.visible {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+
+      .start-card {
+        position: relative;
+        width: min(92vw, 560px);
+        background: #000000;
+        border: 4px solid #175640;
+        padding: 130px 30px 28px;
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5);
+        transform: translateY(16px) scale(0.96);
+        transition: transform 0.35s ease;
+      }
+
+      #end-modal.visible .start-card {
+        transform: translateY(0) scale(1);
+      }
+
+      .start-card img {
+        position: absolute;
+        top: -78px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 100%;
+        border: solid 3px #b81c12;
+        width: 180px;
+        height: 180px;
+        object-fit: contain;
+        filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.45));
+        z-index: 2;
+      }
+
+      .start-card p {
+        margin: 0;
+        color: #ffffff;
+        font-size: clamp(1.5rem, 3vw, 2.7rem);
+        line-height: 1.2;
+        text-align: center;
+        font-family: "Rust Paragraph", sans-serif;
+      }
+
+      .start-button {
+        display: block;
+        margin: 24px auto 0;
+        background: #124b3c;
+        color: #ffffff;
+        border: 2px solid #1f7e68;
+        width: 100%;
+        padding: 14px 28px;
+        font-size: 1.5rem;
+        font-family: "Intro Rust", sans-serif;
+        cursor: pointer;
+        transition: transform 0.15s ease, filter 0.15s ease;
+      }
+
+      .start-button:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.08);
+      }
+
+      .final-score {
+        margin-top: 100px;
+        color: #f3d57d;
+        font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+        text-align: center;
+        font-family: "Rust Paragraph", sans-serif;
+      }
+
+      .end-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-top: 24px;
+      }
+
+      .back-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 14px 28px;
+        background: #3a1d12;
+        border: 2px solid #a85b34;
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 1.2rem;
+        font-family: "Intro Rust", sans-serif;
+        transition: transform 0.15s ease, filter 0.15s ease;
+      }
+
+      .back-button:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.08);
       }
 
       @media (pointer: coarse) {
@@ -155,6 +289,26 @@
       <canvas id="game" width="360" height="500"></canvas>
     </div>
 
+    <div id="start-modal" aria-live="polite">
+      <div class="start-card">
+        <img src="assets/img/angelo-disperato.png" alt="Angelo disperato" />
+        <p>Oh no il mondo è invaso da una pioggia di ananas!!! Proteggi la Ricciarè!!!</p>
+        <button id="start-button" class="start-button" type="button">Gioca</button>
+      </div>
+    </div>
+
+    <div id="end-modal" aria-live="polite" aria-modal="true" role="dialog">
+      <div class="start-card">
+        <img src="assets/img/pizza-con-ananas.png" alt="Pizza con ananas" />
+        <p>Noooooooooooo! Ecco la tua pizza.</p>
+        <p id="final-score" class="final-score">Punteggio: 0</p>
+        <div class="end-actions">
+          <button id="restart-button" class="start-button" type="button">↻ Rigioca</button>
+          <a class="back-button" href="../index.html" aria-label="Torna indietro">Torna indietro</a>
+        </div>
+      </div>
+    </div>
+
     <div id="controls">
       <button
         id="btn-left"
@@ -179,6 +333,11 @@
       const canvas = document.getElementById("game");
       const ctx = canvas.getContext("2d");
       const scoreEl = document.getElementById("score");
+      const finalScoreEl = document.getElementById("final-score");
+      const startModal = document.getElementById("start-modal");
+      const endModal = document.getElementById("end-modal");
+      const startButton = document.getElementById("start-button");
+      const restartButton = document.getElementById("restart-button");
 
       const BASE_WIDTH = 360;
       const BASE_HEIGHT = 500;
@@ -217,6 +376,7 @@
       let elapsed = 0;
       let score = 0;
       let gameOver = false;
+      let gameStarted = false;
       let lastTime = 0;
 
       // Adatta il canvas allo spazio disponibile mantenendo
@@ -248,7 +408,7 @@
       window.addEventListener("keydown", (e) => {
         if (e.key === "ArrowLeft" || e.key === "a") keys.left = true;
         if (e.key === "ArrowRight" || e.key === "d") keys.right = true;
-        if (gameOver && e.key === " ") resetGame();
+        if (gameOver && (e.key === " " || e.key === "Enter")) restartGame();
       });
 
       window.addEventListener("keyup", (e) => {
@@ -292,7 +452,7 @@
       bindHoldButton(document.getElementById("btn-right"), "right");
 
       canvas.addEventListener("pointerdown", () => {
-        if (gameOver) resetGame();
+        if (gameOver) restartGame();
       });
 
       function spawnObstacle() {
@@ -323,7 +483,7 @@
       }
 
       function update(dt) {
-        if (gameOver) return;
+        if (!gameStarted || gameOver) return;
 
         if (keys.left) player.x -= player.speed * dt;
         if (keys.right) player.x += player.speed * dt;
@@ -347,6 +507,8 @@
         for (const obs of obstacles) {
           if (rectsCollide(player, obs)) {
             gameOver = true;
+            finalScoreEl.textContent = `Punteggio: ${score}`;
+            endModal.classList.add("visible");
           }
         }
 
@@ -378,24 +540,27 @@
           }
         }
 
-        if (gameOver) {
-          ctx.fillStyle = "rgba(0,0,0,0.6)";
-          ctx.fillRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
+      }
 
-          ctx.fillStyle = "#fff";
-          ctx.font = "28px sans-serif";
-          ctx.textAlign = "center";
+      function hideEndModal() {
+        endModal.classList.remove("visible");
+      }
 
-          ctx.fillText("Game Over", BASE_WIDTH / 2, BASE_HEIGHT / 2 - 10);
+      function updateFinalScore() {
+        finalScoreEl.textContent = `Punteggio: ${score}`;
+      }
 
-          ctx.font = "16px sans-serif";
+      function startGame() {
+        hideEndModal();
+        resetGame();
+        gameStarted = true;
+        startModal.classList.add("hidden");
+      }
 
-          ctx.fillText(
-            "Tocca per ricominciare / Premi Spazio",
-            BASE_WIDTH / 2,
-            BASE_HEIGHT / 2 + 20,
-          );
-        }
+      function restartGame() {
+        hideEndModal();
+        resetGame();
+        gameStarted = true;
       }
 
       function resetGame() {
@@ -405,6 +570,7 @@
         elapsed = 0;
         score = 0;
         gameOver = false;
+        finalScoreEl.textContent = "Punteggio: 0";
 
         player.x = BASE_WIDTH / 2 - 50;
 
@@ -417,6 +583,9 @@
 
         scoreEl.textContent = "0";
       }
+
+      startButton.addEventListener("click", startGame);
+      restartButton.addEventListener("click", restartGame);
 
       function loop(timestamp) {
         if (!lastTime) lastTime = timestamp;

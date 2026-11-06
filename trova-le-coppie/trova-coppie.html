@@ -152,23 +152,24 @@
       }
 
       /* Feedback errore */
-      .card.errore .card-inner {
+      .card.errore {
         animation: shake 0.35s ease;
       }
       @keyframes shake {
         0%,
         100% {
-          transform: rotateY(180deg) translateX(0);
+          transform: translateX(0);
         }
         25% {
-          transform: rotateY(180deg) translateX(-4px);
+          transform: translateX(-4px);
         }
         75% {
-          transform: rotateY(180deg) translateX(4px);
+          transform: translateX(4px);
         }
       }
 
-      #start-modal {
+      #start-modal,
+      #end-modal {
         position: fixed;
         inset: 0;
         display: flex;
@@ -178,7 +179,8 @@
         z-index: 100;
       }
 
-      #start-modal.hidden {
+      #start-modal.hidden,
+      #end-modal.hidden {
         display: none;
       }
 
@@ -235,6 +237,33 @@
           filter 0.15s ease;
       }
 
+      .start-card .end-stats {
+        margin-top: 18px;
+        font-family: "Intro Rust", sans-serif;
+        font-size: 1.1rem;
+        color: #bf8c4e;
+      }
+
+      .end-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .end-buttons .start-button,
+      .end-buttons .back-button {
+        margin: 0;
+        padding: 14px 10px;
+        font-size: 1.2rem;
+        text-align: center;
+        box-sizing: border-box;
+      }
+
+      .end-buttons .start-button {
+        background: #b81c12;
+        border-color: #d32f22;
+      }
+
       /* Messaggio di fine partita */
       #messaggio {
         margin-top: 20px;
@@ -275,6 +304,26 @@
         <button id="start-button" class="start-button" type="button">
           Gioca
         </button>
+      </div>
+    </div>
+
+    <div id="end-modal" class="hidden">
+      <div class="start-card">
+        <img id="end-image" src="assets/img/i-ragazzi-felici.png" alt="I ragazzi felici" />
+        <p id="end-message">
+          Mamma mia, che memoria! Il menù è di nuovo in ordine e i ragazzi
+          possono tornare a lavoro. Grazie, mille!
+        </p>
+        <p class="end-stats">
+          Tempo: <span id="end-time">00:00</span> &middot; Mosse:
+          <span id="end-moves">0</span>
+        </p>
+        <div class="end-buttons">
+          <a class="back-button" href="../index.html">Torna Indietro</a>
+          <button id="end-restart" class="start-button" type="button">
+            Ricomincia
+          </button>
+        </div>
       </div>
     </div>
 
@@ -325,8 +374,8 @@
         },
       ];
 
-      const NUM_COPPIE = 10; // 10 coppie = 20 carte → perfette per la griglia 4×5
-      const TEMPO_INIZIALE = 600; // 10 minuti in secondi
+      const NUM_COPPIE = 8; // 10 coppie = 20 carte → perfette per la griglia 4×5
+      const TEMPO_INIZIALE = 360; // 10 minuti in secondi
 
       /* ============================================================
          2. STATO DEL GIOCO
@@ -334,6 +383,7 @@
       let primaCarta = null;
       let bloccoClick = false;
       let coppieTrovate = 0;
+      let mosse = 0;
       let secondi = TEMPO_INIZIALE;
       let timerId = null;
       let giocoAttivo = false;
@@ -348,6 +398,12 @@
       const btnRestart = document.getElementById("restart");
       const startModal = document.getElementById("start-modal");
       const btnStart = document.getElementById("start-button");
+      const endModal = document.getElementById("end-modal");
+      const elEndImage = document.getElementById("end-image");
+      const elEndMessage = document.getElementById("end-message");
+      const elEndTime = document.getElementById("end-time");
+      const elEndMoves = document.getElementById("end-moves");
+      const btnEndRestart = document.getElementById("end-restart");
 
       /* ============================================================
          4. UTILITÀ
@@ -452,6 +508,7 @@
 
         // Seconda carta girata
         bloccoClick = true;
+        mosse++;
 
         const stessaPizza = primaCarta.dataset.pizzaId === card.dataset.pizzaId;
         const tipoDiverso = primaCarta.dataset.tipo !== card.dataset.tipo;
@@ -513,14 +570,27 @@
       function vittoria() {
         giocoAttivo = false;
         fermaTimer();
-        elMessaggio.textContent = `🎉 Complimenti! Hai trovato tutte le coppie in ${formattaTempo(TEMPO_INIZIALE - secondi)}!`;
+        mostraFinePartita(true);
+      }
+
+      function mostraFinePartita(vinta) {
+        elEndImage.src = vinta
+          ? "assets/img/i-ragazzi-felici.png"
+          : "assets/img/i-ragazzi-tristi.png";
+        elEndImage.alt = vinta ? "I ragazzi felici" : "I ragazzi tristi";
+        elEndMessage.textContent = vinta
+          ? "Mamma mia, che memoria! Il menù è di nuovo in ordine e i ragazzi possono tornare a lavoro. Grazie mille!"
+          : "Oh no, tempo scaduto! Il menù è ancora in disordine e breve comincia il servizio!!!";
+        elEndTime.textContent = formattaTempo(TEMPO_INIZIALE - secondi);
+        elEndMoves.textContent = mosse;
+        endModal.classList.remove("hidden");
       }
 
       function gameOver() {
         giocoAttivo = false;
         fermaTimer();
         elTime.textContent = "00:00";
-        elMessaggio.textContent = `⏰ Tempo scaduto! Coppie trovate: ${coppieTrovate} / ${NUM_COPPIE}`;
+        mostraFinePartita(false);
       }
 
       /* ============================================================
@@ -533,10 +603,12 @@
         primaCarta = null;
         bloccoClick = false;
         coppieTrovate = 0;
+        mosse = 0;
         giocoAttivo = false; // 👈 carte non cliccabili finché non si gioca
 
         punteggio.textContent = 0;
         elMessaggio.textContent = "";
+        endModal.classList.add("hidden");
         elTime.textContent = formattaTempo(TEMPO_INIZIALE);
 
         render(creaMazzo()); // tabellone già pronto dietro al modale
@@ -553,27 +625,11 @@
         avviaPartita();
       }
 
-      function avviaGioco() {
-        fermaTimer();
-
-        // Reset stato
-        primaCarta = null;
-        bloccoClick = false;
-        coppieTrovate = 0;
-        giocoAttivo = true;
-
-        punteggio.textContent = 0;
-        elMessaggio.textContent = "";
-
-        // Nuovo mazzo + render + timer
-        render(creaMazzo());
-        avviaTimer();
-      }
-
       /* ============================================================
          11. EVENT LISTENERS
          ============================================================ */
       btnRestart.addEventListener("click", avviaGioco);
+      btnEndRestart.addEventListener("click", avviaGioco);
 
       btnStart.addEventListener("click", () => {
         startModal.classList.add("hidden");

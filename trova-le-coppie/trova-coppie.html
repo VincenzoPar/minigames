@@ -26,9 +26,12 @@
         background-color: black;
         font-family: "Intro Rust";
         color: white;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px 0;
       }
 
-      #logo-coce{
+      #logo-coce {
         width: 250px;
       }
 
@@ -68,99 +71,458 @@
         border-radius: 0;
         font-size: large;
         border: none;
+        cursor: pointer;
+      }
+      #restart:hover {
+        background-color: #d32f22;
       }
 
+      /* ---------- Card con flip 3D ---------- */
       .card {
         width: 80px;
         height: 100px;
+        perspective: 600px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .card-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.4s;
+        transform-style: preserve-3d;
+      }
+
+      .card.girata .card-inner,
+      .card.abbinata .card-inner {
+        transform: rotateY(180deg);
+      }
+
+      .card-front,
+      .card-back {
+        position: absolute;
+        inset: 0;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
         background-color: #175640;
         border: solid 2px #bf8c4e;
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
+        box-sizing: border-box;
       }
 
-      .card img {
+      /* Faccia coperta: logo tondo */
+      .card-back img {
         width: 40px;
         height: 40px;
         border-radius: 50%;
       }
+
+      /* Faccia scoperta: pizza o nome */
+      .card-front {
+        transform: rotateY(180deg);
+        padding: 2px;
+        text-align: center;
+        font-family: "Rust Paragraph", sans-serif;
+        font-weight: bold;
+        font-size: 11px;
+        line-height: 1.15;
+        color: white;
+        word-break: break-word;
+        hyphens: auto;
+      }
+
+      .card-front img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 0;
+      }
+
+      /* Coppia abbinata */
+      .card.abbinata {
+        pointer-events: none;
+      }
+      .card.abbinata .card-front {
+        border-color: #27ae60;
+        box-shadow: 0 0 8px #27ae60;
+      }
+
+      /* Feedback errore */
+      .card.errore .card-inner {
+        animation: shake 0.35s ease;
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: rotateY(180deg) translateX(0);
+        }
+        25% {
+          transform: rotateY(180deg) translateX(-4px);
+        }
+        75% {
+          transform: rotateY(180deg) translateX(4px);
+        }
+      }
+
+      #start-modal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.42);
+        z-index: 100;
+      }
+
+      #start-modal.hidden {
+        display: none;
+      }
+
+      .start-card {
+        position: relative;
+        width: min(92vw, 560px);
+        background: #000000;
+        border: 4px solid #175640;
+        padding: 130px 30px 28px;
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5);
+        transform: translateY(16px) scale(0.96);
+        transition: transform 0.35s ease;
+      }
+
+      .start-card img {
+        position: absolute;
+        top: -78px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 100%;
+        border: solid 3px #b81c12;
+        width: 180px;
+        height: 180px;
+        object-fit: cover;
+        filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.45));
+        z-index: 2;
+      }
+
+      .start-card p {
+        margin: 0;
+        color: #ffffff;
+        font-size: clamp(1.5rem, 3vw, 2.7rem);
+        line-height: 1.2;
+        text-align: center;
+        font-family: "Rust Paragraph", sans-serif;
+      }
+
+      .start-button,
+      .back-button {
+        display: block;
+        margin: 24px auto 0;
+        background: #124b3c;
+        color: #ffffff;
+        border: 2px solid #1f7e68;
+        width: 100%;
+        padding: 14px 28px;
+        font-size: 1.5rem;
+        font-family: "Intro Rust", sans-serif;
+        cursor: pointer;
+        text-decoration: none;
+        transition: transform 0.15s ease, filter 0.15s ease;
+      }
+
+      /* Messaggio di fine partita */
+      #messaggio {
+        margin-top: 20px;
+        font-family: "Intro Rust";
+        font-size: 1.1rem;
+        color: #bf8c4e;
+        min-height: 1.5rem;
+        text-align: center;
+        padding: 0 20px;
+      }
     </style>
   </head>
   <body>
-    <img id="logo-coce" src="assets/img/logo-coce-completo.svg" alt="logo Coce" />
+    <img
+      id="logo-coce"
+      src="assets/img/logo-coce-completo.svg"
+      alt="logo Coce"
+    />
 
     <div id="top-bar">
       <h1>Coppie: <span id="punteggio">0</span></h1>
       <h1>Tempo: <span id="time">10:00</span></h1>
     </div>
 
-    <div id="campo">
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-       <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-       <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-             <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-             <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-      <div class="card">
-        <img src="assets/img/logo.jpg" alt="logo coce piccolo" />
-      </div>
-    </div>
+    <div id="campo"></div>
 
     <div id="tasti">
       <a id="back" href="../index.html">Torna Indietro</a>
       <button id="restart">Ricomincia</button>
     </div>
+
+    <div id="start-modal">
+      <div class="start-card">
+        <img src="assets/img/i-ragazzi-confusi.png" alt="Bogdan contrariato" />
+        <p>Che confusione!!! Trova tutte le coppie e aiutaci a riordinare il menù</p>
+        <button id="start-button" class="start-button" type="button">Gioca</button>
+      </div>
+    </div>
+
+    <div id="messaggio"></div>
+
+    <script>
+      /* ============================================================
+         1. STRUTTURA DATI
+         ============================================================ */
+      const PIZZE = [
+        { nome: "Carabinera", path: "assets/img/pizze/carabinera.jpg" },
+        { nome: "Còce Veg", path: "assets/img/pizze/coce-veg.jpg" },
+        { nome: "Curnut e Mazziat", path: "assets/img/pizze/curnut-e-mazziat.jpeg" },
+        { nome: "Diavola Già Giù", path: "assets/img/pizze/diavola-gia-giu.jpg" },
+        { nome: "Era Pizza Moscia", path: "assets/img/pizze/era-pizza-moscia.jpeg" },
+        { nome: "Marinara", path: "assets/img/pizze/marinara.jpeg" },
+        { nome: "Ricciarè", path: "assets/img/pizze/ricciare.jpeg" },
+        {
+          nome: "Scarola Mbuttunat",
+          path: "assets/img/pizze/scarola-mbuttunat.jpg",
+        },
+        { nome: "Zì Nicola", path: "assets/img/pizze/zi-nicola.jpeg" },
+        { nome: "Quattro Formaggi", path: "assets/img/pizze/quattro-formaggi.jpeg" },
+        { nome: "Bianca Cotto e Mais", path: "assets/img/pizze/bianca-cotto-e-mais.jpeg" },
+        {
+          nome: "Bufala Confit",
+          path: "assets/img/pizze/bufala-confit.jpeg",
+        },
+        { nome: "Capricciosa", path: "assets/img/pizze/capricciosa.jpeg" },
+        { nome: "Margherita anni '80", path: "assets/img/pizze/margherita-anni-80.jpeg" },
+      ];
+
+      const NUM_COPPIE = 10; // 10 coppie = 20 carte → perfette per la griglia 4×5
+      const TEMPO_INIZIALE = 600; // 10 minuti in secondi
+
+      /* ============================================================
+         2. STATO DEL GIOCO
+         ============================================================ */
+      let primaCarta = null;
+      let bloccoClick = false;
+      let coppieTrovate = 0;
+      let secondi = TEMPO_INIZIALE;
+      let timerId = null;
+      let giocoAttivo = false;
+
+      /* ============================================================
+         3. RIFERIMENTI DOM
+         ============================================================ */
+      const campo = document.getElementById("campo");
+      const punteggio = document.getElementById("punteggio");
+      const elTime = document.getElementById("time");
+      const elMessaggio = document.getElementById("messaggio");
+      const btnRestart = document.getElementById("restart");
+
+      /* ============================================================
+         4. UTILITÀ
+         ============================================================ */
+      function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      function formattaTempo(sec) {
+        if (sec < 0) sec = 0;
+        const m = String(Math.floor(sec / 60)).padStart(2, "0");
+        const s = String(sec % 60).padStart(2, "0");
+        return `${m}:${s}`;
+      }
+
+      /* ============================================================
+         5. CREAZIONE MAZZO
+         ============================================================ */
+      function creaMazzo() {
+        // Estrae NUM_COPPIE pizze a caso dal pool completo
+        const scelte = shuffle([...PIZZE]).slice(0, NUM_COPPIE);
+
+        const mazzo = [];
+        scelte.forEach((pizza, i) => {
+          mazzo.push({ pizzaId: i, tipo: "image", contenuto: pizza.path });
+          mazzo.push({ pizzaId: i, tipo: "name", contenuto: pizza.nome });
+        });
+        return shuffle(mazzo);
+      }
+
+      /* ============================================================
+         6. RENDER
+         ============================================================ */
+      function render(mazzo) {
+        campo.innerHTML = "";
+        mazzo.forEach((carta) => {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.dataset.pizzaId = carta.pizzaId;
+          card.dataset.tipo = carta.tipo;
+
+          const inner = document.createElement("div");
+          inner.className = "card-inner";
+
+          // Faccia coperta (logo)
+          const back = document.createElement("div");
+          back.className = "card-back";
+          const logo = document.createElement("img");
+          logo.src = "assets/img/logo.jpg";
+          logo.alt = "logo coce piccolo";
+          back.appendChild(logo);
+
+          // Faccia scoperta (pizza o nome)
+          const front = document.createElement("div");
+          front.className = "card-front";
+
+          if (carta.tipo === "image") {
+            const img = document.createElement("img");
+            img.src = carta.contenuto;
+            img.alt = "pizza";
+            img.onerror = () => {
+              img.remove();
+              front.textContent = "🍕";
+              front.style.fontSize = "2rem";
+            };
+            front.appendChild(img);
+          } else {
+            front.textContent = carta.contenuto;
+          }
+
+          inner.appendChild(back);
+          inner.appendChild(front);
+          card.appendChild(inner);
+
+          card.addEventListener("click", () => giraCarta(card));
+          campo.appendChild(card);
+        });
+      }
+
+      /* ============================================================
+         7. LOGICA DEL CLICK
+         ============================================================ */
+      function giraCarta(card) {
+        if (!giocoAttivo) return;
+        if (bloccoClick) return;
+        if (
+          card.classList.contains("girata") ||
+          card.classList.contains("abbinata")
+        )
+          return;
+
+        card.classList.add("girata");
+
+        if (!primaCarta) {
+          primaCarta = card;
+          return;
+        }
+
+        // Seconda carta girata
+        bloccoClick = true;
+
+        const stessaPizza = primaCarta.dataset.pizzaId === card.dataset.pizzaId;
+        const tipoDiverso = primaCarta.dataset.tipo !== card.dataset.tipo;
+
+        if (stessaPizza && tipoDiverso) {
+          // ✅ Coppia trovata
+          primaCarta.classList.add("abbinata");
+          card.classList.add("abbinata");
+          coppieTrovate++;
+          punteggio.textContent = coppieTrovate;
+
+          primaCarta = null;
+          bloccoClick = false;
+
+          if (coppieTrovate === NUM_COPPIE) {
+            vittoria();
+          }
+        } else {
+          // ❌ Errore: rigira dopo un attimo
+          const c1 = primaCarta;
+          const c2 = card;
+          c1.classList.add("errore");
+          c2.classList.add("errore");
+
+          setTimeout(() => {
+            c1.classList.remove("girata", "errore");
+            c2.classList.remove("girata", "errore");
+            primaCarta = null;
+            bloccoClick = false;
+          }, 800);
+        }
+      }
+
+      /* ============================================================
+         8. TIMER
+         ============================================================ */
+      function avviaTimer() {
+        fermaTimer();
+        secondi = TEMPO_INIZIALE;
+        elTime.textContent = formattaTempo(secondi);
+
+        timerId = setInterval(() => {
+          secondi--;
+          elTime.textContent = formattaTempo(secondi);
+          if (secondi <= 0) {
+            gameOver();
+          }
+        }, 1000);
+      }
+
+      function fermaTimer() {
+        if (timerId) clearInterval(timerId);
+        timerId = null;
+      }
+
+      /* ============================================================
+         9. FINE PARTITA
+         ============================================================ */
+      function vittoria() {
+        giocoAttivo = false;
+        fermaTimer();
+        elMessaggio.textContent = `🎉 Complimenti! Hai trovato tutte le coppie in ${formattaTempo(TEMPO_INIZIALE - secondi)}!`;
+      }
+
+      function gameOver() {
+        giocoAttivo = false;
+        fermaTimer();
+        elTime.textContent = "00:00";
+        elMessaggio.textContent = `⏰ Tempo scaduto! Coppie trovate: ${coppieTrovate} / ${NUM_COPPIE}`;
+      }
+
+      /* ============================================================
+         10. AVVIO / RESET
+         ============================================================ */
+      function avviaGioco() {
+        fermaTimer();
+
+        // Reset stato
+        primaCarta = null;
+        bloccoClick = false;
+        coppieTrovate = 0;
+        giocoAttivo = true;
+
+        punteggio.textContent = 0;
+        elMessaggio.textContent = "";
+
+        // Nuovo mazzo + render + timer
+        render(creaMazzo());
+        avviaTimer();
+      }
+
+      /* ============================================================
+         11. EVENT LISTENERS
+         ============================================================ */
+      btnRestart.addEventListener("click", avviaGioco);
+
+      // Avvio iniziale
+      avviaGioco();
+    </script>
   </body>
 </html>

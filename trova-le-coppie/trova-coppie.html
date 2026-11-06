@@ -197,6 +197,7 @@
         position: absolute;
         top: -78px;
         left: 50%;
+        background-color: rgba(0, 0, 0, 0.5);
         transform: translateX(-50%);
         border-radius: 100%;
         border: solid 3px #b81c12;
@@ -229,7 +230,9 @@
         font-family: "Intro Rust", sans-serif;
         cursor: pointer;
         text-decoration: none;
-        transition: transform 0.15s ease, filter 0.15s ease;
+        transition:
+          transform 0.15s ease,
+          filter 0.15s ease;
       }
 
       /* Messaggio di fine partita */
@@ -266,8 +269,12 @@
     <div id="start-modal">
       <div class="start-card">
         <img src="assets/img/i-ragazzi-confusi.png" alt="Bogdan contrariato" />
-        <p>Che confusione!!! Trova tutte le coppie e aiutaci a riordinare il menù</p>
-        <button id="start-button" class="start-button" type="button">Gioca</button>
+        <p>
+          Che confusione!!! Trova tutte le coppie e aiutaci a riordinare il menù
+        </p>
+        <button id="start-button" class="start-button" type="button">
+          Gioca
+        </button>
       </div>
     </div>
 
@@ -280,9 +287,18 @@
       const PIZZE = [
         { nome: "Carabinera", path: "assets/img/pizze/carabinera.jpg" },
         { nome: "Còce Veg", path: "assets/img/pizze/coce-veg.jpg" },
-        { nome: "Curnut e Mazziat", path: "assets/img/pizze/curnut-e-mazziat.jpeg" },
-        { nome: "Diavola Già Giù", path: "assets/img/pizze/diavola-gia-giu.jpg" },
-        { nome: "Era Pizza Moscia", path: "assets/img/pizze/era-pizza-moscia.jpeg" },
+        {
+          nome: "Curnut e Mazziat",
+          path: "assets/img/pizze/curnut-e-mazziat.jpeg",
+        },
+        {
+          nome: "Diavola Già Giù",
+          path: "assets/img/pizze/diavola-gia-giu.jpg",
+        },
+        {
+          nome: "Era Pizza Moscia",
+          path: "assets/img/pizze/era-pizza-moscia.jpeg",
+        },
         { nome: "Marinara", path: "assets/img/pizze/marinara.jpeg" },
         { nome: "Ricciarè", path: "assets/img/pizze/ricciare.jpeg" },
         {
@@ -290,14 +306,23 @@
           path: "assets/img/pizze/scarola-mbuttunat.jpg",
         },
         { nome: "Zì Nicola", path: "assets/img/pizze/zi-nicola.jpeg" },
-        { nome: "Quattro Formaggi", path: "assets/img/pizze/quattro-formaggi.jpeg" },
-        { nome: "Bianca Cotto e Mais", path: "assets/img/pizze/bianca-cotto-e-mais.jpeg" },
+        {
+          nome: "Quattro Formaggi",
+          path: "assets/img/pizze/quattro-formaggi.jpeg",
+        },
+        {
+          nome: "Bianca Cotto e Mais",
+          path: "assets/img/pizze/bianca-cotto-e-mais.jpeg",
+        },
         {
           nome: "Bufala Confit",
           path: "assets/img/pizze/bufala-confit.jpeg",
         },
         { nome: "Capricciosa", path: "assets/img/pizze/capricciosa.jpeg" },
-        { nome: "Margherita anni '80", path: "assets/img/pizze/margherita-anni-80.jpeg" },
+        {
+          nome: "Margherita anni '80",
+          path: "assets/img/pizze/margherita-anni-80.jpeg",
+        },
       ];
 
       const NUM_COPPIE = 10; // 10 coppie = 20 carte → perfette per la griglia 4×5
@@ -321,6 +346,8 @@
       const elTime = document.getElementById("time");
       const elMessaggio = document.getElementById("messaggio");
       const btnRestart = document.getElementById("restart");
+      const startModal = document.getElementById("start-modal");
+      const btnStart = document.getElementById("start-button");
 
       /* ============================================================
          4. UTILITÀ
@@ -499,6 +526,33 @@
       /* ============================================================
          10. AVVIO / RESET
          ============================================================ */
+
+      function preparaPartita() {
+        fermaTimer();
+
+        primaCarta = null;
+        bloccoClick = false;
+        coppieTrovate = 0;
+        giocoAttivo = false; // 👈 carte non cliccabili finché non si gioca
+
+        punteggio.textContent = 0;
+        elMessaggio.textContent = "";
+        elTime.textContent = formattaTempo(TEMPO_INIZIALE);
+
+        render(creaMazzo()); // tabellone già pronto dietro al modale
+      }
+
+      function avviaPartita() {
+        giocoAttivo = true;
+        avviaTimer(); // parte il timer
+      }
+
+      function avviaGioco() {
+        // usata da "Ricomincia"
+        preparaPartita();
+        avviaPartita();
+      }
+
       function avviaGioco() {
         fermaTimer();
 
@@ -521,8 +575,13 @@
          ============================================================ */
       btnRestart.addEventListener("click", avviaGioco);
 
-      // Avvio iniziale
-      avviaGioco();
+      btnStart.addEventListener("click", () => {
+        startModal.classList.add("hidden");
+        avviaPartita(); // 👈 ora parte il timer
+      });
+
+      // Avvio iniziale: mostra il tabellone ma NON far partire il timer
+      preparaPartita();
     </script>
   </body>
 </html>

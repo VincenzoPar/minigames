@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tic Tac Toe</title>
+    <style>
+      @font-face {
+        font-family: "Intro Rust";
+        src: url("assets/fonts/IntroRustG-Base2Line.otf") format("opentype");
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: "Rust Paragraph";
+        src: url("assets/fonts/IntroHeadR-Base.otf") format("opentype");
+        font-weight: bold;
+        font-style: normal;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: black;
+        font-family: "Intro Rust";
+        color: white;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      #logo-coce {
+        width: 250px;
+      }
+
+      #top-bar {
+        display: flex;
+        gap: 50px;
+        font-size: x-small;
+      }
+
+      #tasti {
+        display: flex;
+        gap: 20px;
+      }
+
+      #back {
+        padding: 10px;
+        background-color: #175640;
+        color: white;
+        text-decoration: none;
+      }
+
+      #restart {
+        padding: 10px;
+        color: white;
+        font-family: "Intro Rust";
+        background-color: #b81c12;
+        border-radius: 0;
+        font-size: large;
+        border: none;
+        cursor: pointer;
+      }
+      #restart:hover {
+        background-color: #d32f22;
+      }
+
+      /* ---- MESSAGGIO TURNO ---- */
+      #turn-message {
+        margin: 16px 0 0;
+        font-family: "Rust Paragraph", sans-serif;
+        font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+        text-align: center;
+        min-height: 1.5em;
+        transition: color 0.2s ease;
+      }
+
+      #turn-message.angelo {
+        color: #bf8c4e;
+      }
+
+      #turn-message.giovanni {
+        color: #b81c12;
+      }
+
+      /* ---- CAMPO DA GIOCO ---- */
+      #board {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 8px;
+        width: min(90vw, 360px);
+        aspect-ratio: 1 / 1;
+        margin: 24px 0;
+        background-color: #175640;
+        padding: 8px;
+        border: 4px solid #124b3c;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+      }
+
+      .cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: black;
+        border: 2px solid #1f7e68;
+        cursor: pointer;
+        user-select: none;
+        overflow: hidden;
+        transition: background-color 0.15s ease, transform 0.1s ease;
+      }
+
+      .cell:hover:not(.taken) {
+        background-color: #0d2b22;
+      }
+
+      .cell.taken {
+        cursor: not-allowed;
+      }
+
+      .cell img {
+        width: 78%;
+        height: 78%;
+        object-fit: contain;
+        pointer-events: none;
+        animation: pop 0.25s ease-out;
+      }
+
+      @keyframes pop {
+        0% {
+          transform: scale(0.3);
+          opacity: 0;
+        }
+        70% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .cell.win {
+        background-color: #1f7e68;
+        animation: pulse 0.8s ease infinite alternate;
+      }
+
+      @keyframes pulse {
+        from {
+          filter: brightness(1);
+        }
+        to {
+          filter: brightness(1.4);
+        }
+      }
+
+      /* ---- MODALI ---- */
+      #start-modal,
+      #end-modal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.42);
+        z-index: 100;
+      }
+
+      #start-modal.hidden,
+      #end-modal.hidden {
+        display: none;
+      }
+
+      .start-card {
+        position: relative;
+        width: min(92vw, 560px);
+        background: #000000;
+        border: 4px solid #175640;
+        padding: 130px 30px 28px;
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5);
+        transform: translateY(16px) scale(0.96);
+        transition: transform 0.35s ease;
+      }
+
+      .start-card img {
+        position: absolute;
+        top: -78px;
+        left: 50%;
+        background-color: rgba(0, 0, 0, 0.5);
+        transform: translateX(-50%);
+        border-radius: 100%;
+        border: solid 3px #b81c12;
+        width: 180px;
+        height: 180px;
+        object-fit: cover;
+        filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.45));
+        z-index: 2;
+      }
+
+      .start-card p {
+        margin: 0;
+        color: #ffffff;
+        font-size: clamp(1.5rem, 3vw, 2.7rem);
+        line-height: 1.2;
+        text-align: center;
+        font-family: "Rust Paragraph", sans-serif;
+      }
+
+      .start-button,
+      .back-button {
+        display: block;
+        margin: 24px auto 0;
+        background: #124b3c;
+        color: #ffffff;
+        border: 2px solid #1f7e68;
+        width: 100%;
+        padding: 14px 28px;
+        font-size: 1.5rem;
+        font-family: "Intro Rust", sans-serif;
+        cursor: pointer;
+        text-decoration: none;
+        transition:
+          transform 0.15s ease,
+          filter 0.15s ease;
+      }
+
+      .start-card .end-stats {
+        margin-top: 18px;
+        font-family: "Intro Rust", sans-serif;
+        font-size: 1.1rem;
+        color: #bf8c4e;
+      }
+
+      .end-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .end-buttons .start-button,
+      .end-buttons .back-button {
+        margin: 0;
+        padding: 14px 10px;
+        font-size: 1.2rem;
+        text-align: center;
+        box-sizing: border-box;
+      }
+
+      .end-buttons .start-button {
+        background: #b81c12;
+        border-color: #d32f22;
+      }
+    </style>
+  </head>
+  <body>
+    <img
+      id="logo-coce"
+      src="assets/img/logo-coce-completo.svg"
+      alt="logo Coce"
+    />
+
+    <!-- MESSAGGIO INIZIALE / TURNO -->
+    <p id="turn-message" class="angelo">Inizia Angelo!</p>
+
+    <!-- CAMPO DA GIOCO -->
+    <div id="board" aria-label="Campo da gioco tic tac toe"></div>
+
+    <div id="tasti">
+      <a id="back" href="../index.html">Torna Indietro</a>
+      <button id="restart">Ricomincia</button>
+    </div>
+
+    <div id="start-modal">
+      <div class="start-card">
+        <img
+          src="assets/img/angelo-e-giovanni-sfida.png"
+          alt="Angelo e Giovanni si sfidano"
+        />
+        <p>
+          <span style="font-family: &quot;Intro Rust&quot;; color: #bf8c4e"
+            >Angelo:
+          </span>
+          Sono io il più forte!!! <br />
+          <span style="font-family: &quot;Intro Rust&quot;; color: #b81c12"
+            >Giovanni:
+          </span>
+          No sono io!!! <br />
+
+          Chi è il più forte? Sfida un amico... e che vinca il migliore!
+        </p>
+        <button id="start-button" class="start-button" type="button">
+          Gioca
+        </button>
+      </div>
+    </div>
+
+    <div id="end-modal" class="hidden">
+      <div class="start-card">
+        <img
+          id="end-image"
+          src="assets/img/i-ragazzi-felici.png"
+          alt="I ragazzi felici"
+        />
+        <p id="end-message"></p>
+        <div class="end-buttons">
+          <a class="back-button" href="../index.html">Torna Indietro</a>
+          <button id="end-restart" class="start-button" type="button">
+            Ricomincia
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ====================== COSTANTI ======================
+      const PLAYER_ANGELO = "angelo";
+      const PLAYER_GIOVANNI = "giovanni";
+
+      const IMAGES = {
+        [PLAYER_ANGELO]: "assets/img/angelo.png",
+        [PLAYER_GIOVANNI]: "assets/img/giovanni.png",
+      };
+
+      const ALT_IMAGES = {
+        [PLAYER_ANGELO]: "Angelo",
+        [PLAYER_GIOVANNI]: "Giovanni",
+      };
+
+      const WIN_LINES = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6],
+      ];
+
+      // ====================== STATO ======================
+      const state = {
+        board: Array(9).fill(null),
+        currentPlayer: PLAYER_ANGELO,
+        gameActive: false,
+      };
+
+      // ====================== ELEMENTI DOM ======================
+      const boardEl = document.getElementById("board");
+      const punteggioEl = document.getElementById("punteggio");
+      const turnMessage = document.getElementById("turn-message");
+      const startModal = document.getElementById("start-modal");
+      const endModal = document.getElementById("end-modal");
+      const endMessage = document.getElementById("end-message");
+      const endImage = document.getElementById("end-image");
+      const startButton = document.getElementById("start-button");
+      const restartBtn = document.getElementById("restart");
+      const endRestart = document.getElementById("end-restart");
+
+      // ====================== CREAZIONE CAMPO ======================
+      function buildBoard() {
+        boardEl.innerHTML = "";
+        state.board.forEach((_, index) => {
+          const cell = document.createElement("div");
+          cell.classList.add("cell");
+          cell.dataset.index = index;
+          cell.setAttribute("role", "button");
+          cell.setAttribute("aria-label", `Cella ${index + 1}`);
+          cell.addEventListener("click", () => handleCellClick(index));
+          boardEl.appendChild(cell);
+        });
+      }
+
+      function renderBoard() {
+        const cells = boardEl.querySelectorAll(".cell");
+        cells.forEach((cell, i) => {
+          const value = state.board[i];
+          cell.innerHTML = "";
+          cell.classList.toggle("taken", value !== null);
+          cell.classList.remove("win");
+
+          if (value) {
+            const img = document.createElement("img");
+            img.src = IMAGES[value];
+            img.alt = ALT_IMAGES[value];
+            img.draggable = false;
+            cell.appendChild(img);
+          }
+        });
+      }
+
+      // ====================== MESSAGGIO TURNO ======================
+      function updateTurnMessage() {
+        const name =
+          state.currentPlayer === PLAYER_ANGELO ? "Angelo" : "Giovanni";
+        turnMessage.textContent = `Tocca a ${name}!`;
+        turnMessage.classList.remove("angelo", "giovanni");
+        turnMessage.classList.add(state.currentPlayer);
+      }
+
+      // ====================== LOGICA DI GIOCO ======================
+      function startGame() {
+        state.board = Array(9).fill(null);
+        state.currentPlayer = PLAYER_ANGELO;
+        state.gameActive = true;
+        startModal.classList.add("hidden");
+        endModal.classList.add("hidden");
+        buildBoard();
+        renderBoard();
+        updateTurnMessage();
+      }
+
+      function handleCellClick(index) {
+        if (!state.gameActive) return;
+        if (state.board[index] !== null) return;
+
+        state.board[index] = state.currentPlayer;
+        renderBoard();
+
+        const winner = checkWinner();
+        if (winner) {
+          endGame(winner, "vittoria");
+          return;
+        }
+
+        if (state.board.every((c) => c !== null)) {
+          endGame(null, "pareggio");
+          return;
+        }
+
+        state.currentPlayer =
+          state.currentPlayer === PLAYER_ANGELO
+            ? PLAYER_GIOVANNI
+            : PLAYER_ANGELO;
+        updateTurnMessage();
+      }
+
+      function checkWinner() {
+        for (const line of WIN_LINES) {
+          const [a, b, c] = line;
+          if (
+            state.board[a] &&
+            state.board[a] === state.board[b] &&
+            state.board[a] === state.board[c]
+          ) {
+            return state.board[a];
+          }
+        }
+        return null;
+      }
+
+      function highlightWinningLine() {
+        const cells = boardEl.querySelectorAll(".cell");
+        for (const line of WIN_LINES) {
+          const [a, b, c] = line;
+          if (
+            state.board[a] &&
+            state.board[a] === state.board[b] &&
+            state.board[a] === state.board[c]
+          ) {
+            cells[a].classList.add("win");
+            cells[b].classList.add("win");
+            cells[c].classList.add("win");
+          }
+        }
+      }
+
+      function endGame(winner, reason) {
+        state.gameActive = false;
+
+        if (winner) highlightWinningLine();
+
+        let message = "";
+        if (reason === "pareggio") {
+          message = "Pareggio! Siete davvero alla pari... Che sfida!";
+          endImage.src = "assets/img/i-ragazzi-felici.png";
+          turnMessage.textContent = "Pareggio!";
+          turnMessage.classList.remove("angelo", "giovanni");
+        } else if (winner === PLAYER_ANGELO) {
+          message =
+            "Ha vinto Angelo! Giovanni dovrà accettare che Angelo è il più forte... per ora!";
+          endImage.src = "assets/img/angelo.png";
+          turnMessage.textContent = "Ha vinto Angelo!";
+          turnMessage.classList.remove("angelo", "giovanni");
+          turnMessage.classList.add("angelo");
+        } else if (winner === PLAYER_GIOVANNI) {
+          message =
+            "Ha vinto Giovanni! Angelo dovrà ricredersi... Giovanni è il migliore!";
+          endImage.src = "assets/img/giovanni.png";
+          turnMessage.textContent = "Ha vinto Giovanni!";
+          turnMessage.classList.remove("angelo", "giovanni");
+          turnMessage.classList.add("giovanni");
+        }
+
+        endMessage.textContent = message;
+        endModal.classList.remove("hidden");
+      }
+
+      // ====================== EVENTI ======================
+      startButton.addEventListener("click", startGame);
+      restartBtn.addEventListener("click", startGame);
+      endRestart.addEventListener("click", startGame);
+
+      // ====================== INIT ======================
+      buildBoard();
+      renderBoard();
+      turnMessage.textContent = "Inizia Angelo!";
+      turnMessage.classList.add("angelo");
+    </script>
+  </body>
+</html>

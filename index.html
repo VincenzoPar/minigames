@@ -1,13 +1,299 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mingames</title>
+    <title>Minigames · Coce</title>
+
+    <style>
+        @font-face {
+            font-family: "Intro Rust";
+            src: url("assets/fonts/IntroRustG-Base2Line.otf") format("opentype");
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: "Rust Paragraph";
+            src: url("assets/fonts/IntroHeadR-Base.otf") format("opentype");
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: black;
+            font-family: "Intro Rust", sans-serif;
+            color: white;
+            min-height: 100vh;
+            margin: 0;
+            padding: 24px 16px 48px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Sfondo decorativo a griglia */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(31, 126, 104, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(31, 126, 104, 0.08) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        #logo-coce {
+            width: 250px;
+            max-width: 70vw;
+        }
+
+        .subtitle {
+            margin: 8px 0 0;
+            font-family: "Rust Paragraph", sans-serif;
+            font-size: clamp(1rem, 2.2vw, 1.3rem);
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .subtitle::before,
+        .subtitle::after {
+            content: "✦";
+            color: #b81c12;
+            margin: 0 12px;
+            font-size: 0.9em;
+        }
+
+        /* ---- GRIGLIA DEI GIOCHI ---- */
+        #games {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 22px;
+            width: min(100%, 880px);
+            margin-top: 36px;
+        }
+
+        .game-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background: #000000;
+            border: 3px solid #175640;
+            padding: 28px 20px 22px;
+            text-decoration: none;
+            color: white;
+            cursor: pointer;
+            overflow: hidden;
+            transition:
+                transform 0.2s ease,
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .game-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                180deg,
+                transparent 60%,
+                rgba(23, 86, 64, 0.35) 100%
+            );
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+
+        .game-card:hover {
+            transform: translateY(-6px);
+            border-color: #1f7e68;
+            box-shadow: 0 12px 30px rgba(31, 126, 104, 0.35);
+        }
+
+        .game-card:hover::after {
+            opacity: 1;
+        }
+
+        .game-card:active {
+            transform: translateY(-2px);
+        }
+
+        .game-icon {
+            width: 84px;
+            height: 84px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.6rem;
+            background: #0a1c17;
+            border: 3px solid #124b3c;
+            border-radius: 50%;
+            margin-bottom: 16px;
+            transition:
+                background-color 0.2s ease,
+                border-color 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .game-card:hover .game-icon {
+            background: #175640;
+            border-color: #b81c12;
+            transform: scale(1.08) rotate(-4deg);
+        }
+
+        .game-title {
+            font-family: "Rust Paragraph", sans-serif;
+            font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+            line-height: 1.15;
+            margin: 0 0 8px;
+            color: #ffffff;
+        }
+
+        .game-desc {
+            font-family: "Intro Rust", sans-serif;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: #8fb3a8;
+            margin: 0 0 18px;
+            flex: 1;
+        }
+
+        .game-cta {
+            display: inline-block;
+            padding: 10px 24px;
+            background: #124b3c;
+            border: 2px solid #1f7e68;
+            color: white;
+            font-family: "Intro Rust", sans-serif;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            transition:
+                background-color 0.2s ease,
+                border-color 0.2s ease;
+        }
+
+        .game-card:hover .game-cta {
+            background: #b81c12;
+            border-color: #d32f22;
+        }
+
+        /* Colore accento diverso per ogni gioco */
+        .game-card[data-color="gold"] .game-icon {
+            border-color: #6b4f1f;
+        }
+        .game-card[data-color="gold"]:hover .game-icon {
+            background: #bf8c4e;
+            border-color: #bf8c4e;
+        }
+        .game-card[data-color="gold"] .game-cta {
+            background: #4a3818;
+            border-color: #bf8c4e;
+        }
+        .game-card[data-color="gold"]:hover {
+            border-color: #bf8c4e;
+            box-shadow: 0 12px 30px rgba(191, 140, 78, 0.35);
+        }
+        .game-card[data-color="gold"]:hover .game-cta {
+            background: #bf8c4e;
+            border-color: #d4a869;
+            color: #000;
+        }
+
+        .game-card[data-color="red"]:hover {
+            border-color: #b81c12;
+            box-shadow: 0 12px 30px rgba(184, 28, 18, 0.35);
+        }
+        .game-card[data-color="red"]:hover .game-icon {
+            background: #b81c12;
+            border-color: #d32f22;
+        }
+
+        /* ---- FOOTER ---- */
+        footer {
+            margin-top: 48px;
+            font-family: "Intro Rust", sans-serif;
+            font-size: 0.7rem;
+            color: #4a6b60;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        footer span {
+            color: #b81c12;
+        }
+    </style>
 </head>
 <body>
-    <a href="evita-ananas/evita-ananas.html">Evita l'ananas</a>
-    <a href="ruota-della-pizza/ruota.html">Ruota della Pizza</a>
-    <a href="trova-le-coppie/trova-coppie.html">Trova le coppie</a>
+    <img id="logo-coce" src="assets/img/logo-coce-completo.svg" alt="logo Coce" />
+
+    <p class="subtitle">Non sai cosa fare </p>
+
+    <div id="games">
+        <!-- EVITA L'ANANAS -->
+        <a class="game-card" data-color="gold" href="evita-ananas/evita-ananas.html">
+            <div class="game-icon">
+                <img src="assets/img/angelo-disperato.png" alt="angelo disperato" style="width: 100px;">
+            </div>
+            <h2 class="game-title">Evita l'Ananas</h2>
+            <p class="game-desc">
+                Scappa dalla pizza sbagliata! Muoviti veloce e non farti
+                toccare dall'ananas.
+            </p>
+            <span class="game-cta">Gioca</span>
+        </a>
+
+        <!-- RUOTA DELLA PIZZA -->
+        <a class="game-card" data-color="red" href="ruota-della-pizza/ruota.html">
+            <div class="game-icon">🍕</div>
+            <h2 class="game-title">Ruota della Pizza</h2>
+            <p class="game-desc">
+                Gira la ruota e scopri il tuo destino. Fortuna o disastro?
+                Solo un modo per scoprirlo.
+            </p>
+            <span class="game-cta">Gira</span>
+        </a>
+
+        <!-- TROVA LE COPPIE -->
+        <a class="game-card" data-color="gold" href="trova-le-coppie/trova-coppie.html">
+            <div class="game-icon">🃏</div>
+            <h2 class="game-title">Trova le Coppie</h2>
+            <p class="game-desc">
+                Metti alla prova la tua memoria. Trova tutte le coppie prima
+                che il tempo scada!
+            </p>
+            <span class="game-cta">Gioca</span>
+        </a>
+
+        <!-- TIC TAC TOE -->
+        <a class="game-card" data-color="red" href="tic-tac-toe/tic-tac.html">
+            <div class="game-icon">✖️</div>
+            <h2 class="game-title">Tic Tac Toe</h2>
+            <p class="game-desc">
+                Angelo contro Giovanni. Chi è il più forte? Sfida un amico e
+                scoprilo subito.
+            </p>
+            <span class="game-cta">Sfida</span>
+        </a>
+    </div>
+
+    <footer>
+        Made with <span>♥</span> by Coce
+    </footer>
 </body>
 </html>

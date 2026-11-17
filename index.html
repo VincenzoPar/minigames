@@ -232,17 +232,25 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
 
         footer span {
             color: #b81c12;
+        }
+
+        #logo-c3w{
+            width: 25px;
         }
     </style>
 </head>
 <body>
     <img id="logo-coce" src="assets/img/logo-coce-completo.svg" alt="logo Coce" />
 
-    <p class="subtitle">Non sai cosa fare </p>
+    <p class="subtitle">Hai ordinato? Mentre aspetti prova i nostri minigiochi.</p>
 
     <div id="games">
         <!-- EVITA L'ANANAS -->
@@ -259,19 +267,23 @@
         </a>
 
         <!-- RUOTA DELLA PIZZA -->
-        <a class="game-card" data-color="red" href="ruota-della-pizza/ruota.html">
-            <div class="game-icon">🍕</div>
+        <a class="game-card" data-color="gold" href="ruota-della-pizza/ruota.html">
+            <div class="game-icon">
+                <img src="assets/img/bogdan-contrariato.png" alt="angelo disperato" style="width: 100px;">
+            </div>
             <h2 class="game-title">Ruota della Pizza</h2>
             <p class="game-desc">
                 Gira la ruota e scopri il tuo destino. Fortuna o disastro?
                 Solo un modo per scoprirlo.
             </p>
-            <span class="game-cta">Gira</span>
+            <span class="game-cta">Gioca</span>
         </a>
 
         <!-- TROVA LE COPPIE -->
         <a class="game-card" data-color="gold" href="trova-le-coppie/trova-coppie.html">
-            <div class="game-icon">🃏</div>
+            <div class="game-icon">
+                <img src="assets/img/angelo-e-giovanni-sfida.png" alt="angelo disperato" style="width: 100px;">
+            </div>
             <h2 class="game-title">Trova le Coppie</h2>
             <p class="game-desc">
                 Metti alla prova la tua memoria. Trova tutte le coppie prima
@@ -281,19 +293,21 @@
         </a>
 
         <!-- TIC TAC TOE -->
-        <a class="game-card" data-color="red" href="tic-tac-toe/tic-tac.html">
-            <div class="game-icon">✖️</div>
+        <a class="game-card" data-color="gold" href="tic-tac-toe/tic-tac.html">
+            <div class="game-icon">
+                <img src="assets/img/i-ragazzi-confusi.png" alt="angelo disperato" style="width: 100px;">
+            </div>
             <h2 class="game-title">Tic Tac Toe</h2>
             <p class="game-desc">
                 Angelo contro Giovanni. Chi è il più forte? Sfida un amico e
                 scoprilo subito.
             </p>
-            <span class="game-cta">Sfida</span>
+            <span class="game-cta">Gioca</span>
         </a>
     </div>
 
     <footer>
-        Made with <span>♥</span> by Coce
+        Made with <span>♥</span> by <img id="logo-c3w" src="assets/img/logoC3W.jpeg" alt="logoC3W">
     </footer>
 </body>
 </html>

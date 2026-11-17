@@ -137,6 +137,7 @@
         transform: translateY(0) scale(1);
       }
 
+
       .start-card img {
         position: absolute;
         top: -78px;
@@ -338,12 +339,13 @@
       const endModal = document.getElementById("end-modal");
       const startButton = document.getElementById("start-button");
       const restartButton = document.getElementById("restart-button");
+      const scoreModal = document.getElementById("score-modal");
 
       const BASE_WIDTH = 360;
       const BASE_HEIGHT = 500;
 
       const playerImg = new Image();
-      playerImg.src = "assets/img/margherita.png";
+      playerImg.src = "assets/img/ricciare.png";
       let playerImgReady = false;
 
       playerImg.onload = () => {

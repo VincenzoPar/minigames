@@ -1,0 +1,25 @@
+{
+    "id": "classifica",
+    "items": [
+        {
+            "nick": "Player 1",
+            "score": 5
+        },
+        {
+            "nick": "Player 2",
+            "score": 4
+        },
+        {
+            "nick": "Player 3",
+            "score": 3
+        },
+        {
+            "nick": "Player 4",
+            "score": 2
+        },
+        {
+            "nick": "Player 5",
+            "score": 1
+        }
+    ]
+}

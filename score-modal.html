@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      #score-modal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.42);
+        z-index: 100;
+        color: white;
+        text-align: center;
+      }
+
+      #score-modal.hidden{
+        display: none;
+      }
+
+      .score-card {
+        position: relative;
+        width: min(92vw, 560px);
+        background: #000000;
+        border: 4px solid #175640;
+        padding: 130px 30px 28px;
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5);
+        transform: translateY(16px) scale(0.96);
+        transition: transform 0.35s ease;
+      }
+
+      #start-button {
+        display: block;
+        margin: 24px auto 0;
+        background: #124b3c;
+        color: #ffffff;
+        border: 2px solid #1f7e68;
+        width: 100%;
+        padding: 14px 28px;
+        font-size: 1.5rem;
+        font-family: "Intro Rust", sans-serif;
+        cursor: pointer;
+        transition: transform 0.15s ease, filter 0.15s ease;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="score-modal">
+        <div class="score-card">
+            <h1>Classifica</h1>
+            <div id="classifica"></div>
+            <button id="start-button">Chiudi</button>
+        </div>
+    </div>
+  </body>
+  <script>
+    const modale = document.getElementById("score-modal");
+    const classifica = document.getElementById("classifica");
+    const bottone = document.getElementById("start-button");
+    const SCORE_PATH = "score.json"
+
+    bottone.addEventListener("click", ()=>{
+      modale.classList.add("hidden");
+    });
+
+    async function caricaClassifica(){
+        const response = await fetch(SCORE_PATH);
+        const score = await response.json();
+        renderClassifica(score.items);
+    }
+
+    function renderClassifica(items){
+        classifica.innerHTML = "";
+
+        items.forEach((item, index) => {
+            const riga = document.createElement("div");
+            riga.className = "score-row";
+
+            const posizione = document.createElement("span");
+            posizione.className = "pos";
+            posizione.textContent = `${index + 1}.`;
+
+            const nick = document.createElement("span");
+            nick.className = "nick";
+            nick.textContent = item.nick;
+
+            const punteggio = document.createElement("span");
+            punteggio.className = "punti";
+            punteggio.textContent = item.score;
+
+            riga.append(posizione, nick, punteggio);
+            classifica.appendChild(riga);
+        });
+    }
+
+    caricaClassifica();
+  </script>
+</html>
